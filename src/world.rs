@@ -1,4 +1,4 @@
-use crate::render::{Texture, build_chunk};
+use crate::texture::{Texture, render::build_chunk};
 use macroquad::prelude::*;
 use std::collections::HashMap;
 

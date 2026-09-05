@@ -2,6 +2,8 @@
 
 ## **I am not working in Mojang nor assosiated with Microsoft and Mojang**
 
+This is a recreation of Minecraft
+
 This is just for education purposes, and I'm not making any plans on making money off this.
 
 Everything is original; code, texture, future sound (inc. music) is made by me, or people I know.

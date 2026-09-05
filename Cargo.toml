@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-macroquad = "0.4.15"
+macroquad = "0.4.16"
 enigo = "0.6.1"

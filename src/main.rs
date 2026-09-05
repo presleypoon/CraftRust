@@ -1,8 +1,8 @@
 mod player;
-mod render;
+mod texture;
 mod world;
 use player::*;
-use render::*;
+use texture::{render::render, *};
 use world::*;
 
 use enigo::{Coordinate, Enigo, Mouse, Settings};
@@ -11,38 +11,60 @@ use std::time::{Duration, Instant};
 
 const TPS: f32 = 20.0;
 
-// macro_rules! elapsed {
-// 	($name:expr, $block:block) => {
-// 		let start = std::time::Instant::now();
-// 		$block;
-// 		let duration = start.elapsed();
-// 		println!("{} took {:?}", $name, duration);
-// 	};
-// }
+#[allow(unused_macros)]
+macro_rules! elapsed {
+	($name:expr, $block:block) => {
+		let start = std::time::Instant::now();
+		$block;
+		let duration = start.elapsed();
+		println!("{} took {:?}", $name, duration);
+	};
+}
 
 fn window() -> Conf {
 	Conf {
 		window_title: "Minecraft: Rust Edition".to_string(),
 		fullscreen: true,
 		window_resizable: false,
+		sample_count: 1,
 		..Default::default()
 	}
 }
 
 #[macroquad::main(window)]
 async fn main() {
+	println!("Game start");
+
 	let tick_rate: Duration = Duration::from_secs_f32(1.0 / TPS);
 	let mut last_tick: Instant = Instant::now();
 	let mut accumlator: Duration = Duration::ZERO;
-	let mut running: bool = false;
+	println!("Tick rate init");
+
 	let mut enigo: Enigo = Enigo::new(&Settings::default()).unwrap();
+	println!("Enigo init");
 
 	let mut player: Player = Player::new();
 	let mut world: World = World::new();
 	let mut look_angle: Vec2 = Vec2::ZERO;
 	let textures: Texture = Texture::new().await;
+	let mut running: bool = false;
+	println!("Game var init");
 
-	for (z, y, x) in (-8..8).flat_map(|z| (0..4).flat_map(move |y| (-8..8).map(move |x| (z, y, x)))) {
+	macroquad::texture::build_textures_atlas();
+	println!("Atlas init");
+
+	const CHUNK_X_MIN: i32 = -2;
+	const CHUNK_X_MAX: i32 = 2;
+	const CHUNK_Y_MIN: i32 = 0;
+	const CHUNK_Y_MAX: i32 = 4;
+	const CHUNK_Z_MIN: i32 = -2;
+	const CHUNK_Z_MAX: i32 = 2;
+
+	for (z, y, x) in (CHUNK_Z_MIN..CHUNK_Z_MAX).flat_map(|z: i32| {
+		(CHUNK_Y_MIN..CHUNK_Y_MAX).flat_map(move |y: i32| {
+			(CHUNK_X_MIN..CHUNK_X_MAX).map(move |x: i32| -> (i32, i32, i32) { (z, y, x) })
+		})
+	}) {
 		world.new_chunk(
 			x,
 			y,
@@ -55,19 +77,23 @@ async fn main() {
 			},
 		);
 	}
+	println!("Chunk init");
 
 	set_cursor_grab(true);
 	show_mouse(false);
+	println!("mouse init");
 
 	let (ww, wh) = enigo.main_display().unwrap_or((1920, 1080));
 	let window_width: f32 = ww as f32;
 	let window_height: f32 = wh as f32;
-
 	let centre_x: f32 = window_width / 2.0;
 	let centre_y: f32 = window_height / 2.0;
+	println!("Get window width and height");
 
+	println!("Game start");
 	loop {
 		if is_key_pressed(KeyCode::Escape) {
+			println!("Detect esc, game stopping");
 			break;
 		}
 
@@ -93,6 +119,8 @@ async fn main() {
 
 		next_frame().await;
 	}
+
+	println!("Game ends");
 }
 
 fn game_tick(player: &mut Player, look_angle: Vec2) {
